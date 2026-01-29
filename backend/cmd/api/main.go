@@ -23,15 +23,10 @@ func main() {
 	app.Post("/api/login", middleware.GuestOnly(), handlers.Login)
 	app.Post("/api/logout", handlers.Logout)
 	app.Post("/api/seed", handlers.SeedMenus)
-	// app.Get("/api/health", func(c *fiber.Ctx) error {
-	// 	return c.JSON(fiber.Map{"status": "ok"})
-	// })
-
-	// Protected Routes (ต้องมี Token จาก RADIUS login)
-	// api := app.Group("/api", middleware.Protected())
-    
-	// api.Get("/menus", handlers.GetMenus)
-	// api.Post("/menus/:id/vote", handlers.VoteMenu)
+	// app.Post("api/city", handlers.SelectCity)
+	
+	userGroup := app.Group("/api", middleware.Protected())
+	userGroup.Put("/api/updateLocation", handlers.SelectCity)
 
 	log.Fatal(app.Listen(":8080"))
 }
