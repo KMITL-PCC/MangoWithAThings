@@ -22,6 +22,7 @@ func main() {
 	// Public Routes
 	app.Post("/api/login", middleware.GuestOnly(), handlers.Login)
 	app.Post("/api/logout", handlers.Logout)
+	app.Post("/api/seed", handlers.SeedMenus)
 	// app.Get("/api/health", func(c *fiber.Ctx) error {
 	// 	return c.JSON(fiber.Map{"status": "ok"})
 	// })
