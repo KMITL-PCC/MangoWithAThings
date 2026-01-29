@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"time"
 
@@ -14,6 +15,8 @@ import (
 func AuthenticateWithRadius(username, password string) error {
 	serverAddr := os.Getenv("RADIUS_SERVER_ADDR") // ex: "192.168.1.50:1812"
 	secret := []byte(os.Getenv("RADIUS_SECRET"))  // Shared Secret
+	fmt.Println("RADIUS_SERVER_ADDR:", serverAddr)
+	fmt.Println("RADIUS_SECRET:", string(secret))
 
 	// 1. สร้าง Packet Access-Request
 	packet := radius.New(radius.CodeAccessRequest, secret)

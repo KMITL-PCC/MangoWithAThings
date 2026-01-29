@@ -13,7 +13,6 @@ type Menu struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	
 	Name        string             `bson:"name" json:"name"`
-	Description string             `bson:"description" json:"description"`
 	ImageURL    string             `bson:"image_url" json:"image_url"`
 	
 	// VoteCount: เราเก็บยอดรวมไว้ที่นี่เลย เพื่อความเร็วเวลาดึงมาแสดงหน้าเว็บ
