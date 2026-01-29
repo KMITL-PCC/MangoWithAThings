@@ -4,6 +4,7 @@ import (
 	"context"
 	"mangoBackend/internal/auth"
 	"mangoBackend/internal/database"
+	"mangoBackend/internal/utils"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -13,8 +14,8 @@ import (
 
 // เพิ่ม Field Address ใน Request เผื่อUserส่งมาตอน Login ครั้งแรก
 type LoginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"pass"`
+	Username string `json:"username" validate:"required,min=4,max=20"`
+	Password string `json:"pass" validate:"required,min=4"`
 }
 
 func Login(c *fiber.Ctx) error {
@@ -24,6 +25,12 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
+	if errors := utils.ValidStruct(req); errors != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"message": "Validation Failed",
+			"errors": errors,
+		})
+	}
 	// 2. ถาม FreeRADIUS
 	if err := auth.AuthenticateWithRadius(req.Username, req.Password); err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
