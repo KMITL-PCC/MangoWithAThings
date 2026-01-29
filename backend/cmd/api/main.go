@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"mangoBackend/internal/handlers"
+	"mangoBackend/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
@@ -19,7 +20,7 @@ func main() {
 	app := fiber.New()
 
 	// Public Routes
-	app.Post("/api/login", handlers.Login)
+	app.Post("/api/login", middleware.GuestOnly(), handlers.Login)
 	app.Post("/api/logout", handlers.Logout)
 	// app.Get("/api/health", func(c *fiber.Ctx) error {
 	// 	return c.JSON(fiber.Map{"status": "ok"})

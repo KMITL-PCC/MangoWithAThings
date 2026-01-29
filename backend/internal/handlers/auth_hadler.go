@@ -4,6 +4,7 @@ import (
 	"context"
 	"mangoBackend/internal/auth"
 	"mangoBackend/internal/database"
+	"mangoBackend/internal/models"
 	"mangoBackend/internal/utils"
 	"time"
 
@@ -31,6 +32,7 @@ func Login(c *fiber.Ctx) error {
 			"errors": errors,
 		})
 	}
+	
 	// 2. ถาม FreeRADIUS
 	if err := auth.AuthenticateWithRadius(req.Username, req.Password); err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
@@ -46,35 +48,28 @@ func Login(c *fiber.Ctx) error {
 	// เงื่อนไข: หา user ที่มี username นี้
 	filter := bson.M{"username": req.Username}
 
-	// สิ่งที่จะทำ:
-	// - $set: อัปเดตข้อมูล (last_login)
-	// - $setOnInsert: ถ้าเป็นการสร้างใหม่ ให้ใส่วันที่ created_at และ role
 	update := bson.M{
-		"$set": bson.M{
-			"last_login": time.Now(),
-		},
-		"$setOnInsert": bson.M{
-			"created_at": time.Now(),
-			"role":       "user",
-		},
-	}
+        "$set": bson.M{
+            "last_login": time.Now(),
+        },
+        "$setOnInsert": bson.M{
+            "created_at": time.Now(),
+            "role":       "user",
+            "location":   "", // (Optional) จะกำหนดค่าเริ่มต้นให้ Location เป็นว่างก็ได้
+        },
+    }
 
-	// ถ้า User ส่ง Address มาด้วย ให้อัปเดต Address ลงไป
-	// if req.Address != "" {
-	// 	update["$set"].(bson.M)["address"] = req.Address
-	// }
+	opts := options.FindOneAndUpdate().
+        SetUpsert(true).                  // หาไม่เจอให้สร้าง
+        SetReturnDocument(options.After)  // *** สำคัญ: ขอข้อมูล "หลัง" อัปเดตเสร็จแล้ว (New Version)
 
-	// Option: Upsert = true (หาไม่เจอ ให้สร้างใหม่เลย!)
-	opts := options.Update().SetUpsert(true)
+	var user models.User
 
-	_, err := userCollection.UpdateOne(ctx, filter, update, opts)
+	err := userCollection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&user)
+    
 	if err != nil {
-		// Login ผ่าน Radius แล้ว แต่เซฟลง DB ไม่ได้ (อาจจะ DB ล่ม)
-		// เราควรยอมให้เขา Login ไหม? ขึ้นอยู่กับ Business
-		// แต่เคสนี้ return error ไปก่อนเพื่อความปลอดภัย
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to update user profile"})
-	}
-
+        return c.Status(500).JSON(fiber.Map{"error": "Database error"})
+    }
 	// ---------------------------------------------------------
 
 	// 4. Generate JWT
@@ -94,8 +89,8 @@ func Login(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "Login successful",
-		// "token":   token,
-		// "first_time_hint": "Check if address is empty in profile", 
+		"username": req.Username,
+		"location": user.Location,
 	})
 }
 
