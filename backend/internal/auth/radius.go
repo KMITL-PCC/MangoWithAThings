@@ -22,6 +22,7 @@ func AuthenticateWithRadius(username, password string) error {
 	packet := radius.New(radius.CodeAccessRequest, secret)
 	rfc2865.UserName_SetString(packet, username)
 	rfc2865.UserPassword_SetString(packet, password)
+	fmt.Println("Password :", password)
 
 	// 2. ส่ง Request (กำหนด Timeout 5 วินาที)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

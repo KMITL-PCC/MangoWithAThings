@@ -7,18 +7,20 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+
 	// "mangoBackend/internal/middleware"
-	// "mangoBackend/internal/database"
+	"mangoBackend/internal/database"
 )
 
 func main() {
 	godotenv.Load()
-    // database.ConnectDB() ...
+    database.ConnectDB()
 
 	app := fiber.New()
 
 	// Public Routes
 	app.Post("/api/login", handlers.Login)
+	app.Post("/api/logout", handlers.Logout)
 	// app.Get("/api/health", func(c *fiber.Ctx) error {
 	// 	return c.JSON(fiber.Map{"status": "ok"})
 	// })

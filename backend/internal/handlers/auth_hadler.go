@@ -1,15 +1,20 @@
 package handlers
 
 import (
+	"context"
 	"mangoBackend/internal/auth"
+	"mangoBackend/internal/database"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // เพิ่ม Field Address ใน Request เผื่อUserส่งมาตอน Login ครั้งแรก
 type LoginRequest struct {
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password string `json:"pass"`
 }
 
 func Login(c *fiber.Ctx) error {
@@ -27,41 +32,41 @@ func Login(c *fiber.Ctx) error {
 	// ---------------------------------------------------------
 	// 3. จัดการข้อมูลใน MongoDB (จุดที่เพิ่มเข้ามา)
 	// ---------------------------------------------------------
-	// ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	// defer cancel()
-	// userCollection := database.GetCollection("users")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	userCollection := database.GetCollection("users")
 
-	// // เงื่อนไข: หา user ที่มี username นี้
-	// filter := bson.M{"username": req.Username}
+	// เงื่อนไข: หา user ที่มี username นี้
+	filter := bson.M{"username": req.Username}
 
-	// // สิ่งที่จะทำ:
-	// // - $set: อัปเดตข้อมูล (last_login) และ address (ถ้าส่งมา)
-	// // - $setOnInsert: ถ้าเป็นการสร้างใหม่ ให้ใส่วันที่ created_at และ role
-	// update := bson.M{
-	// 	"$set": bson.M{
-	// 		"last_login": time.Now(),
-	// 	},
-	// 	"$setOnInsert": bson.M{
-	// 		"created_at": time.Now(),
-	// 		"role":       "user",
-	// 	},
+	// สิ่งที่จะทำ:
+	// - $set: อัปเดตข้อมูล (last_login)
+	// - $setOnInsert: ถ้าเป็นการสร้างใหม่ ให้ใส่วันที่ created_at และ role
+	update := bson.M{
+		"$set": bson.M{
+			"last_login": time.Now(),
+		},
+		"$setOnInsert": bson.M{
+			"created_at": time.Now(),
+			"role":       "user",
+		},
+	}
+
+	// ถ้า User ส่ง Address มาด้วย ให้อัปเดต Address ลงไป
+	// if req.Address != "" {
+	// 	update["$set"].(bson.M)["address"] = req.Address
 	// }
 
-	// // ถ้า User ส่ง Address มาด้วย ให้อัปเดต Address ลงไป
-	// // if req.Address != "" {
-	// // 	update["$set"].(bson.M)["address"] = req.Address
-	// // }
+	// Option: Upsert = true (หาไม่เจอ ให้สร้างใหม่เลย!)
+	opts := options.Update().SetUpsert(true)
 
-	// // Option: Upsert = true (หาไม่เจอ ให้สร้างใหม่เลย!)
-	// opts := options.Update().SetUpsert(true)
-
-	// _, err := userCollection.UpdateOne(ctx, filter, update, opts)
-	// if err != nil {
-	// 	// Login ผ่าน Radius แล้ว แต่เซฟลง DB ไม่ได้ (อาจจะ DB ล่ม)
-	// 	// เราควรยอมให้เขา Login ไหม? ขึ้นอยู่กับ Business
-	// 	// แต่เคสนี้ return error ไปก่อนเพื่อความปลอดภัย
-	// 	return c.Status(500).JSON(fiber.Map{"error": "Failed to update user profile"})
-	// }
+	_, err := userCollection.UpdateOne(ctx, filter, update, opts)
+	if err != nil {
+		// Login ผ่าน Radius แล้ว แต่เซฟลง DB ไม่ได้ (อาจจะ DB ล่ม)
+		// เราควรยอมให้เขา Login ไหม? ขึ้นอยู่กับ Business
+		// แต่เคสนี้ return error ไปก่อนเพื่อความปลอดภัย
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update user profile"})
+	}
 
 	// ---------------------------------------------------------
 
@@ -71,9 +76,32 @@ func Login(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": "Could not generate token"})
 	}
 
+	cookie := new(fiber.Cookie)
+	cookie.Name = "jwt"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.HTTPOnly = true
+	cookie.SameSite = "Lax"
+
+	c.Cookie(cookie)
+
 	return c.JSON(fiber.Map{
 		"message": "Login successful",
-		"token":   token,
-		"first_time_hint": "Check if address is empty in profile", // บอก Frontend อ้อมๆ
+		// "token":   token,
+		// "first_time_hint": "Check if address is empty in profile", 
+	})
+}
+
+func Logout(c *fiber.Ctx) error {
+	cookie := new(fiber.Cookie)
+	cookie.Name = "jwt"
+	cookie.Value = ""
+	cookie.Expires = time.Now().Add(-time.Hour)
+	cookie.HTTPOnly = true
+
+	c.Cookie(cookie)
+
+	return c.JSON(fiber.Map{
+		"message": "Logout successful",
 	})
 }

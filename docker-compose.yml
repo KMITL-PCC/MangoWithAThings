@@ -1,14 +1,17 @@
 
 services:
   # 1. Database
-  # mongo:
-  #   image: mongo:latest
-  #   container_name: mango-mongo
-  #   restart: always
-  #   volumes:
-  #     - mongo_data:/data/db
-  #   networks:
-  #     - mango-net
+  mongo:
+    image: mongo:latest
+    container_name: mango-mongo
+    restart: always
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mango-net
 
   # 2. Backend (Go)
   backend:
@@ -16,7 +19,7 @@ services:
     container_name: mango-backend
     restart: always
     environment:
-      - MONGO_URI=${MONGO_URL}
+      - MONGO_URL=${MONGO_URL}
       - JWT_SECRET=${JWT_SECRET}
       - RADIUS_SERVER_ADDR=${RADIUS_SERVER_ADDR}
       - RADIUS_SECRET=${RADIUS_SECRET}

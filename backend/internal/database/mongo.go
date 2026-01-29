@@ -32,7 +32,7 @@ func ConnectDB() {
 		log.Fatal("Failed to ping MongoDB:", err)
 	}
 
-	log.Println("✅ Connected to MongoDB successfully")
+	log.Println("Connected to MongoDB successfully")
 	Client = client
 }
 
