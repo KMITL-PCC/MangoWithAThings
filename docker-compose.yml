@@ -29,12 +29,12 @@ services:
       - mango-net
 
   # 3. Frontend (Next.js)
-  # frontend:
-  #   build: ./frontend
-  #   container_name: mango-frontend
-  #   restart: always
-  #   networks:
-  #     - mango-net
+  frontend:
+    build: ./frontend
+    container_name: mango-frontend
+    restart: always
+    networks:
+      - mango-net
 
   # 4. Web Server (Nginx)
   nginx:
@@ -45,10 +45,59 @@ services:
     volumes:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      # - frontend
+      - frontend
       - backend
     networks:
       - mango-net
+
+  db:
+    image: mysql:8.0
+    container_name: radius-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: radius
+      MYSQL_USER: radius
+      MYSQL_PASSWORD: radpass
+    volumes:
+      - ./freeradius/mysql-data:/var/lib/mysql
+    networks:
+      - mango-net
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: radius-pma
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    # ports:
+    #   - "8080:80"
+    networks:
+      - mango-net
+
+  freeradius:
+    build: ./freeradius
+    container_name: radius-server
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - "1812:1812/udp"
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=radius
+      - DB_PASS=radpass
+      - DB_NAME=radius
+    networks:
+      - mango-net
+
+
 
 volumes:
   mongo_data:
