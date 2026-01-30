@@ -30,6 +30,7 @@ export default function MangoPreference() {
       const res = await fetch("/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ vote: name }),
       });
 
