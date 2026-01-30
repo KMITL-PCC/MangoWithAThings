@@ -81,7 +81,7 @@ export default function Loginpage() {
                   type="password"
                   className="pl-10 bg-black/40 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-2 focus-visible:ring-purple-500"
                   value={pass}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => setPass(e.target.value)}
                   placeholder="••••••••"
                   required
                 />
