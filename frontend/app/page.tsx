@@ -34,6 +34,7 @@ export default function LocationSelect() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           location,
         }),
