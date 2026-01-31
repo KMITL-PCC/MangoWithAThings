@@ -26,7 +26,7 @@ func main() {
 	// app.Post("api/city", handlers.SelectCity)
 	
 	userGroup := app.Group("/api", middleware.Protected())
-	userGroup.Put("/api/updateLocation", handlers.SelectCity)
+	userGroup.Put("/updateLocation", handlers.SelectCity)
 
 	log.Fatal(app.Listen(":8080"))
 }

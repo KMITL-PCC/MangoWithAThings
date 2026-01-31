@@ -54,7 +54,6 @@ func Login(c *fiber.Ctx) error {
         },
         "$setOnInsert": bson.M{
             "created_at": time.Now(),
-            "role":       "user",
             "location":   "", // (Optional) จะกำหนดค่าเริ่มต้นให้ Location เป็นว่างก็ได้
         },
     }

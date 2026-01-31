@@ -61,7 +61,7 @@ services:
       MYSQL_USER: radius
       MYSQL_PASSWORD: radpass
     volumes:
-      - ./freeradius/mysql-data:/var/lib/mysql
+      - db:/var/lib/mysql
     networks:
       - mango-net
 
@@ -101,6 +101,7 @@ services:
 
 volumes:
   mongo_data:
+  db:
 
 networks:
   mango-net:
