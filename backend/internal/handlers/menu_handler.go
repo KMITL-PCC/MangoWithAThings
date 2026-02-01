@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -71,6 +72,7 @@ func GetMenus(c *fiber.Ctx) error {
     defer cancel()
 
     menuCollection := database.GetCollection("menus")
+    voteLogCollection := database.GetCollection("vote_logs")
 
     //2. query all menus
     cursor, err := menuCollection.Find(ctx, bson.M{})
@@ -83,7 +85,24 @@ func GetMenus(c *fiber.Ctx) error {
     if err = cursor.All(ctx, &menus); err != nil {
         return c.Status(500).JSON(fiber.Map{"error": "Error parsing menus"})
     }
+
+    //3. query vote log for this user
+    var myVotedMenuID string = ""
+
+    userToken := c.Locals("user").(*jwt.Token)
+    claims := userToken.Claims.(jwt.MapClaims)
+    username := claims["username"].(string)
+
+    var voteLog models.VoteLog
+    err = voteLogCollection.FindOne(ctx, bson.M{"voter": username}).Decode(&voteLog)
+
+    if err == nil {
+        myVotedMenuID = voteLog.MenuID.Hex()
+    }
+
     return c.JSON(fiber.Map{
         "menus": menus,
+        "username": username,
+        "vote_id": myVotedMenuID,
     })
 }

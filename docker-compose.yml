@@ -2,7 +2,7 @@
 services:
   # 1. Database
   mongo:
-    image: mongo:latest
+    image: mongo:4.4.30
     container_name: mango-mongo
     restart: always
     # environment:
