@@ -1,0 +1,89 @@
+package handlers
+
+import (
+	"context"
+	"mangoBackend/internal/database"
+	"mangoBackend/internal/models"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson"
+)
+
+func SeedMenus(c *fiber.Ctx) error {
+    // ข้อมูลเริ่มต้น (Mock Data)
+    menus := []interface{}{
+        models.Menu{Name: "น้ำปลาหวาน", VoteCount: 0},
+        models.Menu{Name: "พริกเกลือ", VoteCount: 0},
+        models.Menu{Name: "พริกเกลือลาว", VoteCount: 0},
+        models.Menu{Name: "กะปิ", VoteCount: 0},
+        models.Menu{Name: "บ๊วย", VoteCount: 0},
+        models.Menu{Name: "มันกุ้ง", VoteCount: 0},
+    }
+
+	students := []models.Student{
+		{Name: "ธนวัฒน์ บุญประสพ", StudentID: "66200105", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ธนายุทธ ศรีเรือง", StudentID: "66200108", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ภัทรดนัย บุญไทย", StudentID: "66200383", Major: "Computer engineering", CreatedAt: time.Now()},
+	}
+
+	var studentsWithField []interface{}
+    for _, student := range students {
+        studentsWithField = append(studentsWithField, student)
+    }
+
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+    
+    menuCollection := database.GetCollection("menus")
+        
+	_, err := menuCollection.DeleteMany(ctx, bson.M{}) 
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Failed to clear old menus"})
+    }
+
+    // Insert Many ทีเดียวหลายตัว
+    _, err = menuCollection.InsertMany(ctx, menus)
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Seeding failed"})
+    }
+
+	studentCollection := database.GetCollection("students")
+	_, err = studentCollection.DeleteMany(ctx, bson.M{})
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to clear old students"})
+	}
+
+	_, err = studentCollection.InsertMany(ctx, studentsWithField)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Seeding students failed"})
+	}
+
+    return c.JSON(fiber.Map{
+        "message": "Database cleared and seeded successfully!",
+        "count":   len(menus),
+    })
+}
+
+func GetMenus(c *fiber.Ctx) error {
+    //1. connect to DB
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    menuCollection := database.GetCollection("menus")
+
+    //2. query all menus
+    cursor, err := menuCollection.Find(ctx, bson.M{})
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Database error"})
+    }
+    defer cursor.Close(ctx)
+
+    var menus []models.Menu
+    if err = cursor.All(ctx, &menus); err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Error parsing menus"})
+    }
+    return c.JSON(fiber.Map{
+        "menus": menus,
+    })
+}

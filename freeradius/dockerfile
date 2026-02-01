@@ -1,0 +1,14 @@
+FROM freeradius/freeradius-server
+
+# ลบ Config เดิมทิ้งก่อน
+RUN rm -rf /etc/freeradius/*
+
+# ก๊อปปี้ Config จากเครื่องเราเข้าไปใส่ใน Container
+COPY ./radius-config/ /etc/freeradius/
+
+# แก้สิทธิ์ไฟล์ให้ถูกต้อง (User: root, Group: radius, ห้ามคนอื่นเขียน)
+RUN chown -R root:freerad /etc/freeradius && \
+    chmod -R 750 /etc/freeradius
+
+# สั่งให้รันแบบ Debug Mode จะได้เห็น Logs
+CMD ["freeradius", "-X"]
