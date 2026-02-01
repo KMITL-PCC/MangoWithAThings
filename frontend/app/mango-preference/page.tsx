@@ -3,12 +3,19 @@
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useEffect,useState } from "react";
+import { PopupNotification } from "@/components/PopupNotification";
 
 type VoteStat = {
   name: string;
   vote_count: number;
 };
+
+type Student = {
+  student_id: string;
+  name: string;
+};
+
 
 const toppings = [
   { id: 1, name: "น้ำปลาหวาน", img: "/น้ำปลาหวาน.jpg" },
@@ -22,6 +29,8 @@ const toppings = [
 export default function MangoPreference() {
   const [selected, setSelected] = useState<string | null>(null);
   const [stats, setStats] = useState<VoteStat[]>([]);
+  const [open, setOpen] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
 
   const handleSelect = async (name: string) => {
     setSelected(name);
@@ -46,11 +55,32 @@ export default function MangoPreference() {
     0
   );
 
+  useEffect(() => {
+    const fetchStudents = async () => {
+      const res = await fetch("/api/students", {
+        credentials: "include",
+      });
+
+      const data: Student[] = await res.json();
+
+      setStudents(data.slice(0, 3));
+
+      setOpen(true);
+    };
+
+    fetchStudents();
+  }, []);
+
   return (
     <div
       onClick={() => setSelected(null)}
       className="min-h-screen bg-gradient-to-br from-yellow-200 via-emerald-100 to-lime-200 flex items-center justify-center p-6"
     >
+      <PopupNotification
+       open={open} 
+       onClose={() => setOpen(false)} 
+       students={students}
+       />
       <Card
         onClick={() => setSelected(null)}
         className="
@@ -77,7 +107,7 @@ export default function MangoPreference() {
             />
           </motion.div>
 
-          {/* กลาง */}
+          
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
