@@ -44,6 +44,15 @@ func VoteMenu(c *fiber.Ctx) error {
 	}
 
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.Before)
+	
+	count, err := menuCol.CountDocuments(ctx, bson.M{"_id": newMenuID})
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Database error checking menu"})
+    }
+    
+    if count == 0 {
+        return c.Status(404).JSON(fiber.Map{"error": "Menu not found"})
+    }
 
 	var oldVote models.VoteLog
 	err = voteLogCol.FindOneAndUpdate(ctx, filter, update, opts).Decode(&oldVote)
