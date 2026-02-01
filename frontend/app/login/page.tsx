@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { User, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Loginpage() {
   const [username, setUsername] = useState("");
@@ -22,6 +23,8 @@ export default function Loginpage() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    const router = useRouter()
 
     try {
       const res = await fetch("/api/login", {
@@ -41,6 +44,7 @@ export default function Loginpage() {
           "Username หรือ Password ไม่ถูกต้องอะน้องไปขโมยรหัสใครมาป่าว",
         );
       }
+      router.push("/location")
     } catch (err: any) {
       setError(err.message);
     } finally {
