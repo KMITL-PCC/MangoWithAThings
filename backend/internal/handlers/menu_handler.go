@@ -23,7 +23,7 @@ func SeedMenus(c *fiber.Ctx) error {
     }
 
 	students := []models.Student{
-		{Name: "ธนวัฒน์ บุญประสพ", StudentID: "66200105", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ธนะวัฒน์ บุญประสพ", StudentID: "66200105", Major: "Computer engineering", CreatedAt: time.Now()},
 		{Name: "ธนายุทธ ศรีเรือง", StudentID: "66200108", Major: "Computer engineering", CreatedAt: time.Now()},
 		{Name: "ภัทรดนัย บุญไทย", StudentID: "66200383", Major: "Computer engineering", CreatedAt: time.Now()},
 	}
