@@ -29,6 +29,7 @@ func main() {
 	userGroup.Put("/updateLocation", handlers.SelectCity)
 	userGroup.Put("/vote/:id", handlers.VoteMenu)
 	userGroup.Get("/menus", handlers.GetMenus)
+	userGroup.Get("/students", handlers.GetStudents)
 
 	log.Fatal(app.Listen(":8080"))
 }
