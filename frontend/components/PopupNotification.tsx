@@ -14,38 +14,54 @@ type Student = {
   name: string;
 };
 
-interface PopupProps {
+type PopupNotificationProps = {
   open: boolean;
   onClose: () => void;
-  students?: Student[];
+  students: Student[];
 }
+
 
 export function PopupNotification({
   open,
   onClose,
   students,
-}: PopupProps) {
+}: PopupNotificationProps) {
+
+  if (!open) return null;
+
+  
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-zinc-900 text-white">
-        <DialogHeader>
-          <DialogTitle>รายชื่อนักศึกษา 🎓</DialogTitle>
-        </DialogHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center">
 
-        {students && (
-          <ul className="mt-3 space-y-1 text-sm text-zinc-300">
-            {students.map((s) => (
-              <li key={s.student_id}>
-                {s.student_id} – {s.name}
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="space-y-4">
+          {students.map((s) => (
+            <div
+              key={s.student_id}
+              className="rounded-xl border border-emerald-200 bg-emerald-50 p-4"
+            >
+              <p className="text-lg font-semibold text-emerald-800">
+                {s.name}
+              </p>
+              <p className="text-sm text-emerald-600">
+                รหัสนักศึกษา {s.student_id}
+              </p>
+            </div>
+          ))}
+        </div>
 
-        <DialogFooter>
-          <Button onClick={onClose}>ปิด</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        {/* สาขา */}
+        <div className="mt-6 text- font-medium text-zinc-600">
+          สาขาวิศวกรรมคอมพิวเตอร์
+        </div>
+
+        <button
+          onClick={onClose}
+          className="mt-6 w-full rounded-xl bg-emerald-600 py-2 text-white font-semibold hover:bg-emerald-700 transition"
+        >
+          ปิด
+        </button>
+      </div>
+    </div>
   );
 }

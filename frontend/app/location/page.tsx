@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { provincesByRegion } from "@/data/provinces";
@@ -15,27 +12,15 @@ export default function LocationSelect() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkLocation = async () => {
-      try {
-        const res = await fetch("/api/login", {
-          credentials: "include",
-        });
+    const savedLocation = localStorage.getItem("location");
 
-        const data = await res.json();
+    if (savedLocation) {
+      window.location.replace("/mango-preference");
+      return;
+    }
 
-        if (data.location) {
-          window.location.href = "/mango-preference";
-          return;
-        }
-      } catch {
-        // ignore
-      } finally {
-        setChecking(false);
-      }
-    };
-    checkLocation();
+    setChecking(false);
   }, []);
-    
 
   if (checking) return null;
 
@@ -44,7 +29,7 @@ export default function LocationSelect() {
 
     try {
       const res = await fetch("/api/location", {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -67,10 +52,26 @@ export default function LocationSelect() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-500 via-lime-400 to-yellow-300 p-4">
-      <Card className="w-full max-w-4xl rounded-2xl shadow-2xl">
+    <div
+      className="
+    min-h-screen flex items-center justify-center p-4
+    bg-gradient-to-br
+    from-[#2f3e1f]
+    via-[#3f4f2a]
+    to-[#556b2f]
+  "
+    >
+      <Card
+        className="
+    w-full max-w-4xl
+    rounded-2xl
+    shadow-2xl
+    bg-white/90
+    backdrop-blur
+  "
+      >
         <CardContent className="p-8">
-          <h1 className="text-3xl font-bold text-center mb-8">
+          <h1 className="text-3xl font-bold text-center mb-8 text-emerald-900">
             เลือกจังหวัดของคุณ
           </h1>
 
@@ -83,7 +84,14 @@ export default function LocationSelect() {
                   setRegion(r);
                   setLocation(null);
                 }}
-                className="text-lg px-6 py-3"
+                className={`
+              text-lg px-6 py-3
+              ${
+                region === r
+                  ? "bg-emerald-700 text-white hover:bg-emerald-800"
+                  : "border-emerald-600 text-emerald-800 hover:bg-emerald-50"
+              }
+            `}
               >
                 {r}
               </Button>
@@ -99,8 +107,8 @@ export default function LocationSelect() {
                   className={
                     "rounded-xl border p-3 text-center font-medium transition-all " +
                     (location === p
-                      ? "bg-primary text-primary-foreground scale-105 shadow-lg"
-                      : "bg-background hover:shadow-md")
+                      ? "bg-emerald-700 text-white scale-105 shadow-lg border-emerald-700"
+                      : "bg-white text-emerald-900 border-emerald-200 hover:shadow-md hover:bg-emerald-50")
                   }
                 >
                   {p}
@@ -113,7 +121,11 @@ export default function LocationSelect() {
             onClick={handleConfirm}
             disabled={!location}
             size="lg"
-            className="w-full mt-10 rounded-xl text-lg"
+            className="
+          w-full mt-10 rounded-xl text-lg
+          bg-emerald-700 hover:bg-emerald-800
+          disabled:bg-emerald-300
+        "
           >
             {location ? `ยืนยันจังหวัด` : "กรุณาเลือกจังหวัด"}
           </Button>
