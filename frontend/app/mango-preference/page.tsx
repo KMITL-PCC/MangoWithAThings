@@ -7,6 +7,7 @@ import { useEffect,useState } from "react";
 import { PopupNotification } from "@/components/PopupNotification";
 
 type VoteStat = {
+  id: number;
   name: string;
   vote_count: number;
 };
@@ -27,20 +28,20 @@ const toppings = [
 ];
 
 export default function MangoPreference() {
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<{id: number, name: string} | null>(null);
   const [stats, setStats] = useState<VoteStat[]>([]);
   const [open, setOpen] = useState(false);
   const [students, setStudents] = useState<Student[]>([]);
 
-  const handleSelect = async (name: string) => {
-    setSelected(name);
+  const handleSelect = async (item: { id: number; name: string}) => {
+    setSelected(item);
 
     try {
       const res = await fetch("/api/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ vote: name }),
+        body: JSON.stringify({ topping_id: item.id }),
       });
 
       const data: VoteStat[] = await res.json();
@@ -131,7 +132,7 @@ export default function MangoPreference() {
                 key={item.id}
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleSelect(item.name);
+                  handleSelect(item);
                 }}
                 whileHover={{ scale: 1.1, rotate: 2 }}
                 whileTap={{ scale: 0.95 }}
@@ -140,7 +141,7 @@ export default function MangoPreference() {
                 transition={{ delay: index * 0.08 }}
                 className={
                   "flex flex-col items-center gap-2 rounded-xl transition-all " +
-                  (selected === item.name
+                  (selected === item
                     ? "scale-110 ring-4 ring-emerald-400 bg-emerald-50"
                     : "")
                 }
@@ -159,7 +160,6 @@ export default function MangoPreference() {
           </div>
         </div>
 
-        {/* ผลโหวต */}
         {stats.length > 0 && (
           <div className="mt-10 space-y-4">
             {stats.map((item) => {
