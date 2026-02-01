@@ -22,11 +22,11 @@ func main() {
 	// Public Routes
 	app.Post("/api/login", middleware.GuestOnly(), handlers.Login)
 	app.Post("/api/logout", handlers.Logout)
-	app.Post("/api/seed", handlers.SeedMenus)
+	app.Get("/api/seed", handlers.SeedMenus)
 	// app.Post("api/city", handlers.SelectCity)
 	
 	userGroup := app.Group("/api", middleware.Protected())
-	userGroup.Put("/updateLocation", handlers.SelectCity)
+	userGroup.Put("/location", handlers.SelectCity)
 	userGroup.Put("/vote/:id", handlers.VoteMenu)
 	userGroup.Get("/menus", handlers.GetMenus)
 	userGroup.Get("/students", handlers.GetStudents)
