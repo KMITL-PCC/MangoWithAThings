@@ -22,9 +22,9 @@ func SeedMenus(c *fiber.Ctx) error {
     }
 
 	students := []models.Student{
-		{Name: "สมชาย ใจดี", StudentID: "6201012610050", Major: "Computer engineering", CreatedAt: time.Now()},
-		{Name: "สมหญิง แสนสวย", StudentID: "6201012610051", Major: "Computer engineering", CreatedAt: time.Now()},
-		{Name: "สมปอง รวยรินทร์", StudentID: "6201012610052", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ธนวัฒน์ บุญประสพ", StudentID: "66200105", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ธนายุทธ ศรีเรือง", StudentID: "66200108", Major: "Computer engineering", CreatedAt: time.Now()},
+		{Name: "ภัทรดนัย บุญไทย", StudentID: "66200383", Major: "Computer engineering", CreatedAt: time.Now()},
 	}
 
 	var studentsWithField []interface{}
@@ -35,15 +35,15 @@ func SeedMenus(c *fiber.Ctx) error {
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
     
-    collection := database.GetCollection("menus")
-    
-	_, err := collection.DeleteMany(ctx, bson.M{}) 
+    menuCollection := database.GetCollection("menus")
+        
+	_, err := menuCollection.DeleteMany(ctx, bson.M{}) 
     if err != nil {
         return c.Status(500).JSON(fiber.Map{"error": "Failed to clear old menus"})
     }
 
     // Insert Many ทีเดียวหลายตัว
-    _, err = collection.InsertMany(ctx, menus)
+    _, err = menuCollection.InsertMany(ctx, menus)
     if err != nil {
         return c.Status(500).JSON(fiber.Map{"error": "Seeding failed"})
     }
