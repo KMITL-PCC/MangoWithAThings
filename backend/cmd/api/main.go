@@ -28,6 +28,7 @@ func main() {
 	userGroup := app.Group("/api", middleware.Protected())
 	userGroup.Put("/updateLocation", handlers.SelectCity)
 	userGroup.Put("/vote/:id", handlers.VoteMenu)
+	userGroup.Get("/menus", handlers.GetMenus)
 
 	log.Fatal(app.Listen(":8080"))
 }

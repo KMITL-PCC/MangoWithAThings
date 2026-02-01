@@ -64,3 +64,26 @@ func SeedMenus(c *fiber.Ctx) error {
         "count":   len(menus),
     })
 }
+
+func GetMenus(c *fiber.Ctx) error {
+    //1. connect to DB
+    ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+    defer cancel()
+
+    menuCollection := database.GetCollection("menus")
+
+    //2. query all menus
+    cursor, err := menuCollection.Find(ctx, bson.M{})
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Database error"})
+    }
+    defer cursor.Close(ctx)
+
+    var menus []models.Menu
+    if err = cursor.All(ctx, &menus); err != nil {
+        return c.Status(500).JSON(fiber.Map{"error": "Error parsing menus"})
+    }
+    return c.JSON(fiber.Map{
+        "menus": menus,
+    })
+}
